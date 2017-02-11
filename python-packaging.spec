@@ -2,7 +2,7 @@
 
 Name:           python-%{pypi_name}
 Version:        16.8
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Core utilities for Python packages
 
 License:        BSD or ASL 2.0
@@ -96,6 +96,9 @@ rm -rf html/_static/fonts/
 %license LICENSE LICENSE.APACHE LICENSE.BSD
 
 %changelog
+* Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 16.8-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
+
 * Mon Dec 19 2016 Miro Hrončok <mhroncok@redhat.com> - 16.8-2
 - Rebuild for Python 3.6
 
