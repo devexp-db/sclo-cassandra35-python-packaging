@@ -1,8 +1,13 @@
 %global pypi_name packaging
 
+%global build_wheel 1
+
+%global python2_wheelname %{pypi_name}-%{version}-py2.py3-none-any.whl
+%global python3_wheelname %python2_wheelname
+
 Name:           python-%{pypi_name}
 Version:        16.8
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Core utilities for Python packages
 
 License:        BSD or ASL 2.0
@@ -24,6 +29,13 @@ BuildRequires:  python3-pretend
 BuildRequires:  python3-pyparsing
 BuildRequires:  python3-six
 BuildRequires:  python3-sphinx
+
+%if 0%{?build_wheel}
+BuildRequires:  python2-pip
+BuildRequires:  python-wheel
+BuildRequires:  python%{python3_pkgversion}-pip
+BuildRequires:  python%{python3_pkgversion}-wheel
+%endif
 
 %description
 python-packaging provides core utilities for Python packages like utilities for
@@ -62,8 +74,16 @@ Documentation for python-packaging
 rm -rf %{pypi_name}.egg-info
 
 %build
+%if 0%{?build_wheel}
+%py2_build_wheel
+%else
 %py2_build
+%endif
+%if 0%{?build_wheel}
+%py3_build_wheel
+%else
 %py3_build
+%endif
 # generate html docs 
 sphinx-build-3 docs html
 # remove the sphinx-build leftovers
@@ -72,8 +92,16 @@ rm -rf html/.{doctrees,buildinfo}
 rm -rf html/_static/fonts/
 
 %install
+%if 0%{?build_wheel}
+%py2_install_wheel %{python2_wheelname}
+%else
 %py2_install
+%endif
+%if 0%{?build_wheel}
+%py3_install_wheel %{python3_wheelname}
+%else
 %py3_install
+%endif
 
 %check
 %{__python2} -m pytest tests/
@@ -83,19 +111,22 @@ rm -rf html/_static/fonts/
 %license LICENSE LICENSE.APACHE LICENSE.BSD
 %doc README.rst CHANGELOG.rst CONTRIBUTING.rst
 %{python2_sitelib}/%{pypi_name}/
-%{python2_sitelib}/%{pypi_name}-%{version}-py%{python2_version}.egg-info
+%{python2_sitelib}/%{pypi_name}-*.dist-info/
 
 %files -n python3-%{pypi_name}
 %license LICENSE LICENSE.APACHE LICENSE.BSD
 %doc README.rst CHANGELOG.rst CONTRIBUTING.rst
 %{python3_sitelib}/%{pypi_name}/
-%{python3_sitelib}/%{pypi_name}-%{version}-py%{python3_version}.egg-info
+%{python3_sitelib}/%{pypi_name}-*.dist-info/
 
 %files -n python-%{pypi_name}-doc
 %doc html
 %license LICENSE LICENSE.APACHE LICENSE.BSD
 
 %changelog
+* Mon Feb 13 2017 Charalampos Stratakis <cstratak@redhat.com> - 16.8-4
+- Rebuild as wheel
+
 * Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 16.8-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
 
