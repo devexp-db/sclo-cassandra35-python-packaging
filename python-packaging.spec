@@ -1,3 +1,6 @@
+%{?scl:%scl_package python-packaging}
+%{!?scl:%global pkg_name %{name}}
+
 %global pypi_name packaging
 
 %if 0%{?fedora}
@@ -8,9 +11,9 @@
 %global python2_wheelname %{pypi_name}-%{version}-py2.py3-none-any.whl
 %global python3_wheelname %python2_wheelname
 
-Name:           python-%{pypi_name}
+Name:           %{?scl_prefix}python-%{pypi_name}
 Version:        16.8
-Release:        6%{?dist}
+Release:        7%{?dist}
 Summary:        Core utilities for Python packages
 
 License:        BSD or ASL 2.0
@@ -32,7 +35,7 @@ BuildRequires:  pyparsing
 BuildRequires:  python-sphinx
 %endif
 
-BuildRequires:  python-pretend
+BuildRequires:  %{?scl_prefix}python2-pretend
 BuildRequires:  python-six
 
 # Build Python 3 subpackage only for Fedora
@@ -55,13 +58,16 @@ BuildRequires:  python%{python3_pkgversion}-wheel
 %endif
 %endif
 
+%{?scl:Requires: %scl_runtime}
+%{?scl:BuildRequires: %scl-scldevel}
+
 %description
 python-packaging provides core utilities for Python packages like utilities for
 dealing with versions, specifiers, markers etc.
 
-%package -n python2-%{pypi_name}
+%package -n %{?scl_prefix}python2-%{pypi_name}
 Summary:        %{summary}
-%{?python_provide:%python_provide python2-%{pypi_name}}
+%{!?scl:%{?python_provide:%python_provide python2-%{pypi_name}}}
 
 %if 0%{?fedora}
 Requires:       python2-pyparsing
@@ -71,7 +77,7 @@ Requires:       pyparsing
 
 Requires:       python-six
 
-%description -n python2-%{pypi_name}
+%description -n %{?scl_prefix}python2-%{pypi_name}
 python2-packaging provides core utilities for Python packages like utilities for
 dealing with versions, specifiers, markers etc.
 
@@ -87,9 +93,9 @@ python3-packaging provides core utilities for Python packages like utilities for
 dealing with versions, specifiers, markers etc.
 %endif
 
-%package -n python-%{pypi_name}-doc
+%package -n %{?scl_prefix}python-%{pypi_name}-doc
 Summary:        python-packaging documentation
-%description -n python-%{pypi_name}-doc
+%description -n %{?scl_prefix}python-%{pypi_name}-doc
 Documentation for python-packaging
 
 %prep
@@ -101,7 +107,9 @@ rm -rf %{pypi_name}.egg-info
 %if 0%{?build_wheel}
 %py2_build_wheel
 %else
+%{?scl:scl enable %{scl} - << "EOF"}
 %py2_build
+%{?scl:EOF}
 %endif
 
 %if 0%{?with_python3}
@@ -116,7 +124,9 @@ rm -rf %{pypi_name}.egg-info
 %if 0%{?with_python3}
 sphinx-build-3 docs html
 %else
+%{?scl:scl enable %{scl} - << "EOF"}
 sphinx-build docs html
+%{?scl:EOF}
 %endif
 
 # remove the sphinx-build leftovers
@@ -128,7 +138,9 @@ rm -rf html/_static/fonts/
 %if 0%{?build_wheel}
 %py2_install_wheel %{python2_wheelname}
 %else
-%py2_install
+%{?scl:scl enable %{scl} - << "EOF"}
+%{py2_install -- --prefix %{?_prefix}}
+%{?scl:EOF}
 %endif
 
 %if 0%{?with_python3}
@@ -145,10 +157,12 @@ rm -rf html/_static/fonts/
 %{__python3} -m pytest tests/
 %else
 # Disable non-working tests in Epel7
+%{?scl:scl enable %{scl} - << "EOF"}
 %{__python2} -m pytest --ignore=tests/test_requirements.py tests/
+%{?scl:EOF}
 %endif
 
-%files -n python2-%{pypi_name}
+%files -n %{?scl_prefix}python2-%{pypi_name}
 %license LICENSE LICENSE.APACHE LICENSE.BSD
 %doc README.rst CHANGELOG.rst CONTRIBUTING.rst
 %{python2_sitelib}/%{pypi_name}/
@@ -162,11 +176,14 @@ rm -rf html/_static/fonts/
 %{python3_sitelib}/%{pypi_name}-*-info/
 %endif
 
-%files -n python-%{pypi_name}-doc
+%files -n %{?scl_prefix}python-%{pypi_name}-doc
 %doc html
 %license LICENSE LICENSE.APACHE LICENSE.BSD
 
 %changelog
+* Tue Oct 03 2017 Augusto Mecking Caringi <acaringi@redhat.com< - 16.8-7
+- scl conversion
+
 * Thu Jul 27 2017 Fedora Release Engineering <releng@fedoraproject.org> - 16.8-6
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
 
